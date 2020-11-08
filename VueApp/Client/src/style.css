@@ -1,0 +1,69 @@
+.ship {
+   display: flex;
+   flex-wrap: wrap;
+   left: 0;
+   top: 0;
+   z-index: 2;
+}
+
+.ship div {
+    width: 2em;
+    height: 2em;
+}
+
+.single {
+    background-color: yellow;
+    width: 2em;
+    height: 2em;
+}
+
+.double {
+    background-color: red;
+    width: 2em;
+    height: 4em;
+}
+.double.horizontal {
+    width: 4em !important;
+    height: 2em;
+}
+
+.triple {
+    background-color: green;
+    width: 2em;
+    height: 6em;
+}
+.triple.horizontal {
+    width: 6em !important;
+    height: 2em;
+}
+
+.quarter {
+    background-color: aqua;
+    width: 2em;
+    height: 8em;
+}
+.quarter.horizontal {
+    width: 8em !important;
+    height: 2em;
+}
+
+#dock {
+    background-color: royalblue;
+    width: 500px;
+    height: 500px;
+    position: relative;
+}
+
+#board {
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+#board td {
+    width: 2em;
+    height: 2em;
+    border: 1px solid gray;
+    position: relative;
+    padding: 0;
+    box-sizing: border-box;
+}

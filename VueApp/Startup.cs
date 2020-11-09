@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -31,6 +32,8 @@ namespace VueApp
             services.AddSpaStaticFiles(options => options.RootPath = "ClientApp/dist");
 
             services.AddSignalR();
+
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -45,6 +48,7 @@ namespace VueApp
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
@@ -54,6 +58,8 @@ namespace VueApp
             });
 
             app.UseSpaStaticFiles();
+
+            app.UseMiddleware<AuthorizationMiddleware>();
 
             app.UseSpa(configuration: builder =>
             {

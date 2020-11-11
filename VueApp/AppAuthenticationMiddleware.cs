@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace VueApp
 {
-    public class AuthorizationMiddleware
+    public class AppAuthenticationMiddleware
     {
         private readonly RequestDelegate _next;
 
-        public AuthorizationMiddleware(RequestDelegate next)
+        public AppAuthenticationMiddleware(RequestDelegate next)
         {
             _next = next;
         }

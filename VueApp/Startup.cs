@@ -59,7 +59,7 @@ namespace VueApp
 
             app.UseSpaStaticFiles();
 
-            app.UseMiddleware<AuthorizationMiddleware>();
+            app.UseMiddleware<AppAuthenticationMiddleware>();
 
             app.UseSpa(configuration: builder =>
             {

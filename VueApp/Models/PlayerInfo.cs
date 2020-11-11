@@ -8,7 +8,7 @@ namespace VueApp.Models
     public class PlayerInfo
     {
         public readonly string Name;
-        private Square[] Board = new Square[100];
+        private Square[,] Board = new Square[10,10];
         public int HP { get; set; }
         public bool Ready { get; set; }
 
@@ -24,9 +24,16 @@ namespace VueApp.Models
             {
                 for (int col = 0; col < 10; col++)
                 {
-                    Board[row * 10 + col] = new Square(row, col);
+                    Board[row , col] = new Square();
                 }
             }
+        }
+
+        public bool GetFire(int row, int col)
+        {
+            var square = Board[row,col];
+            square.Boom = true;
+            return square.Taken;
         }
     }
 }

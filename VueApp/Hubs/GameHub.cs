@@ -16,55 +16,52 @@ namespace VueApp.Hubs
 
         public async Task<string> CreateMatch()
         {
-            string userName = Context.User.Identity.Name;
-            string matchId = Guid.NewGuid().ToString();           
+            string clientId = Context.ConnectionId;
+            string matchId = Guid.NewGuid().ToString();
 
             Match match = new Match(matchId);
-            match.AddPlayer(userName);
+            match.AddPlayer(clientId);
             MatchManager.Matches.Add(match);
 
-            await Groups.AddToGroupAsync(userName, matchId);
+            await Groups.AddToGroupAsync(clientId, matchId);
 
             return matchId;
         }
 
         public async Task<bool> JoinMatch(string matchId)
         {
-            string userName = Context.User.Identity.Name;
-
-            await Groups.AddToGroupAsync(userName, matchId);
-
+            string clientId = Context.ConnectionId;
             Match match = MatchManager.Matches.FirstOrDefault(x => x.Id == matchId);
-
-            match.AddPlayer(userName);
-
+            match.AddPlayer(clientId);
+            await Groups.AddToGroupAsync(clientId, matchId);
             return true;
         }
 
-        public async Task PlayerReady()
+        public async Task PlayerReady(Square[][] board)
         {
-            string userName = Context.User.Identity.Name;
-            Match match = MatchManager.GetMatch(userName);
-            var currentPlayer = match.Players.FirstOrDefault(x => x.Name == userName);
-            var enemy = match.Players.FirstOrDefault(x => x.Name != userName);
+            string clientId = Context.ConnectionId;
+            Match match = MatchManager.GetMatch(clientId);
+            var currentPlayer = match.Players.FirstOrDefault(x => x.Id == clientId);
+            var enemy = match.Players.FirstOrDefault(x => x.Id != clientId);
             currentPlayer.Ready = true;
+            currentPlayer.SetBoard(board);
             if (enemy.Ready)
             {
-                var test = Clients.Group(match.Id);
-                await Clients.Group(match.Id).SendAsync("GameStarted");
+                int rnd = new Random().Next(2);
+                string whoseTurn = match.Players[rnd].Id;
+                await Clients.Group(match.Id).SendAsync("GameStarted", whoseTurn);
             }
                 
         }
 
         public async Task<bool> Fire(Coords coords)
         {
-            string userName = Context.User.Identity.Name;
-
-            Match match = MatchManager.GetMatch(userName);
-            var enemy = match.Players.FirstOrDefault(x => x.Name != userName);
+            string clientId = Context.ConnectionId;
+            Match match = MatchManager.GetMatch(clientId);
+            var enemy = match.Players.FirstOrDefault(x => x.Id != clientId);
             bool hit = enemy.GetFire(coords.Row, coords.Col);
 
-            await Clients.User(enemy.Name).SendAsync("GetFire", coords);
+            await Clients.Client(enemy.Id).SendAsync("GetFire", coords);
 
             return hit;
         }

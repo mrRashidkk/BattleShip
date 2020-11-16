@@ -7,14 +7,14 @@ namespace VueApp.Models
 {
     public class PlayerInfo
     {
-        public readonly string Name;
-        private Square[,] Board = new Square[10,10];
-        public int HP { get; set; }
+        public readonly string Id;
+        private Square[][] Board = new Square[10][];
+        private int HP = 20;
         public bool Ready { get; set; }
 
-        public PlayerInfo(string userName)
+        public PlayerInfo(string clientId)
         {
-            Name = userName;
+            Id = clientId;
             CreateBoard();
         }
 
@@ -22,17 +22,25 @@ namespace VueApp.Models
         {
             for(int row = 0; row < 10; row++)
             {
+                Square[] squaresRow = new Square[10];
                 for (int col = 0; col < 10; col++)
                 {
-                    Board[row , col] = new Square();
+                    squaresRow[col] = new Square();
                 }
+                Board[row] = squaresRow;
             }
+        }
+
+        public void SetBoard(Square[][] board)
+        {
+            Board = board;
         }
 
         public bool GetFire(int row, int col)
         {
-            var square = Board[row,col];
+            var square = Board[row][col];
             square.Boom = true;
+            if (square.Taken) HP--;
             return square.Taken;
         }
     }

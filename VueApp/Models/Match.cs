@@ -23,7 +23,7 @@ namespace VueApp.Models
 
         public List<PlayerInfo> Players { get => players; }
 
-        public void AddPlayer(string userName)
+        public void AddPlayer(string clientId)
         {
             if (Started)
                 throw new Exception("Cannot add player to started match");
@@ -36,12 +36,12 @@ namespace VueApp.Models
             switch(count)
             {
                 case 0:
-                    players.Add(new PlayerInfo(userName));
+                    players.Add(new PlayerInfo(clientId));
                     break;
                 case 1:
-                    if (players[0].Name == userName)
+                    if (players[0].Id == clientId)
                         throw new ArgumentException("Cannot add the same player twice");
-                    players.Add(new PlayerInfo(userName));
+                    players.Add(new PlayerInfo(clientId));
                     break;
                 case 2:
                     throw new Exception("Only 2 players can play!");

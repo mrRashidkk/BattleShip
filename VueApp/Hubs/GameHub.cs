@@ -63,7 +63,25 @@ namespace VueApp.Hubs
 
             await Clients.Client(enemy.Id).SendAsync("GetFire", coords);
 
+            GameState state = new GameState
+            {
+                WhoseTurn = enemy.Id
+            };
+            if (enemy.HP == 0)
+            {
+                state.GameOver = true;
+                state.Winner = clientId;
+            };
+            await Clients.Group(match.Id).SendAsync("UpdateState", state);
+
             return hit;
+        }
+
+        public class GameState
+        {
+            public bool GameOver { get; set; }
+            public string Winner { get; set; }
+            public string WhoseTurn { get; set; }
         }
 
         public class Coords

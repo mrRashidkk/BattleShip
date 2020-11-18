@@ -9,7 +9,7 @@ namespace VueApp.Models
     {
         public readonly string Id;
         private Square[][] Board = new Square[10][];
-        private int HP = 20;
+        public int HP { get; private set; } = 20;
         public bool Ready { get; set; }
 
         public PlayerInfo(string clientId)

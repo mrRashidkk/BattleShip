@@ -11,77 +11,138 @@ namespace VueApp.Hubs
     {
         public override async Task OnConnectedAsync()
         {
-            var id = Context.ConnectionId;
+            PlayerManager.Add(Context.ConnectionId);
         }
 
-        public async Task<string> CreateMatch()
+        public override async Task OnDisconnectedAsync(Exception exception)
         {
-            string clientId = Context.ConnectionId;
-            string matchId = Guid.NewGuid().ToString();
+            var player = PlayerManager.Get(Context.ConnectionId);
+            player.Disconnect();
 
-            Match match = new Match(matchId);
-            match.AddPlayer(clientId);
-            MatchManager.Matches.Add(match);
+            var match = MatchManager.GetMatchForPlayer(player.Id);
+            if (match != null)
+            {
+                if (match.Players.All(x => !x.Connected))
+                {
+                    var players = match.Players.ToList();
 
-            await Groups.AddToGroupAsync(clientId, matchId);
-
-            return matchId;
+                    MatchManager.Delete(match);
+                    
+                    foreach(var p in players)
+                    {
+                        if (!MatchManager.PlayerInAnyMatch(p.Id))
+                            PlayerManager.Delete(p);
+                    }                    
+                }
+                else
+                {
+                    await Clients.Group(match.Id).SendAsync("UpdateState", MapToDto(match));
+                }                
+            }
         }
 
-        public async Task<bool> JoinMatch(string matchId)
+        public async Task<MatchDto> CreateMatch()
         {
-            string clientId = Context.ConnectionId;
-            Match match = MatchManager.Matches.FirstOrDefault(x => x.Id == matchId);
-            match.AddPlayer(clientId);
-            await Groups.AddToGroupAsync(clientId, matchId);
-            return true;
+            var player = PlayerManager.Get(Context.ConnectionId);
+
+            Match match = new Match(Guid.NewGuid().ToString());
+            match.AddPlayer(player);
+            MatchManager.Add(match);
+
+            await Groups.AddToGroupAsync(player.Id, match.Id);
+
+            return MapToDto(match);
+        }
+
+        public async Task<MatchDto> JoinMatch(string matchId)
+        {
+            var player = PlayerManager.Get(Context.ConnectionId);
+
+            Match match = MatchManager.GetById(matchId);
+            match.AddPlayer(player);
+
+            await Groups.AddToGroupAsync(player.Id, matchId);
+
+            await Clients.Group(match.Id).SendAsync("UpdateState", MapToDto(match));
+
+            return MapToDto(match);
         }
 
         public async Task PlayerReady(Square[][] board)
         {
-            string clientId = Context.ConnectionId;
-            Match match = MatchManager.GetMatch(clientId);
-            var currentPlayer = match.Players.FirstOrDefault(x => x.Id == clientId);
-            var enemy = match.Players.FirstOrDefault(x => x.Id != clientId);
-            currentPlayer.Ready = true;
-            currentPlayer.SetBoard(board);
-            if (enemy.Ready)
+            var player = PlayerManager.Get(Context.ConnectionId);
+
+            player.Ready = true;
+            player.SetBoard(board);
+
+            Match match = MatchManager.GetMatchForPlayer(player.Id);
+            var enemy = match.Players.FirstOrDefault(x => x.Id != player.Id);           
+
+            if (enemy?.Ready == true)
             {
-                int rnd = new Random().Next(2);
-                string whoseTurn = match.Players[rnd].Id;
-                await Clients.Group(match.Id).SendAsync("GameStarted", whoseTurn);
+                match.Started = true;
+                int index = new Random().Next(2);
+                match.WhoseTurn = match.Players[index].Id;                
             }
-                
+
+            await Clients.Group(match.Id).SendAsync("UpdateState", MapToDto(match));
         }
 
         public async Task<bool> Fire(Coords coords)
         {
-            string clientId = Context.ConnectionId;
-            Match match = MatchManager.GetMatch(clientId);
-            var enemy = match.Players.FirstOrDefault(x => x.Id != clientId);
+            var player = PlayerManager.Get(Context.ConnectionId);
+
+            Match match = MatchManager.GetMatchForPlayer(player.Id);
+            var enemy = match.Players.FirstOrDefault(x => x.Id != player.Id);
             bool hit = enemy.GetFire(coords.Row, coords.Col);
 
             await Clients.Client(enemy.Id).SendAsync("GetFire", coords);
 
-            GameState state = new GameState
-            {
-                WhoseTurn = enemy.Id
-            };
+            match.WhoseTurn = enemy.Id;
             if (enemy.HP == 0)
             {
-                state.GameOver = true;
-                state.Winner = clientId;
+                match.GameOver = true;
+                match.Winner = player.Id;
             };
-            await Clients.Group(match.Id).SendAsync("UpdateState", state);
+            
+            await Clients.Group(match.Id).SendAsync("UpdateState", MapToDto(match));
 
             return hit;
         }
 
-        public class GameState
+        public class MatchDto
         {
+            public string Id { get; set; }
             public bool GameOver { get; set; }
             public string Winner { get; set; }
             public string WhoseTurn { get; set; }
+            public bool Started { get; set; }
+            public List<PlayerDto> Players { get; set; }
+        }
+
+        private MatchDto MapToDto(Match match)
+        {
+            return new MatchDto
+            {
+                Id = match.Id,
+                GameOver = match.GameOver,
+                Winner = match.Winner,
+                WhoseTurn = match.WhoseTurn,
+                Started = match.Started,
+                Players = match.Players.Select(x => new PlayerDto
+                {
+                    Id = x.Id,
+                    Connected = x.Connected,
+                    Ready = x.Ready
+                }).ToList()
+            };
+        }
+
+        public class PlayerDto
+        {
+            public string Id { get; set; }
+            public bool Connected { get; set; }
+            public bool Ready { get; set; }
         }
 
         public class Coords

@@ -8,6 +8,7 @@ namespace VueApp.Models
     public class PlayerInfo
     {
         public readonly string Id;
+        public bool Connected { get; private set; }
         private Square[][] Board = new Square[10][];
         public int HP { get; private set; } = 20;
         public bool Ready { get; set; }
@@ -15,6 +16,7 @@ namespace VueApp.Models
         public PlayerInfo(string clientId)
         {
             Id = clientId;
+            Connected = true;
             CreateBoard();
         }
 
@@ -42,6 +44,11 @@ namespace VueApp.Models
             square.Boom = true;
             if (square.Taken) HP--;
             return square.Taken;
+        }
+
+        public void Disconnect()
+        {
+            Connected = false;
         }
     }
 }

@@ -8,9 +8,18 @@ namespace VueApp
 {
     public class MatchManager
     {
-        public static List<Match> Matches = new List<Match>();
+        private static List<Match> _matches = new List<Match>();
 
-        public static Match GetMatch(string userName) => 
-            Matches.FirstOrDefault(x => x.Players.Any(y => y.Id == userName));
+        public static Match GetMatchForPlayer(string playerId) =>
+            _matches.FirstOrDefault(x => x.Players.Any(y => y.Id == playerId));
+
+        public static Match GetById(string id) => _matches.FirstOrDefault(x => x.Id == id);
+
+        public static void Add(Match match) => _matches.Add(match);
+
+        public static void Delete(Match match) => _matches.Remove(match);
+
+        public static bool PlayerInAnyMatch(string playerId) =>
+            _matches.Any(x => x.Players.Any(y => y.Id == playerId));
     }
 }

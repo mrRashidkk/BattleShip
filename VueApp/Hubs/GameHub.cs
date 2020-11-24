@@ -9,105 +9,157 @@ namespace VueApp.Hubs
 {
     public class GameHub : Hub
     {
+        public async Task Test()
+        {
+            await Clients.Caller.SendAsync("Error", "Just kidding :)");
+        }
+
         public override async Task OnConnectedAsync()
         {
-            PlayerManager.Add(Context.ConnectionId);
+            try
+            {
+                PlayerManager.Add(Context.ConnectionId);
+            }
+            catch(Exception e)
+            {
+                await Clients.Caller.SendAsync("Error", e.Message);
+            }            
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            var player = PlayerManager.Get(Context.ConnectionId);
-            player.Disconnect();
-
-            var match = MatchManager.GetMatchForPlayer(player.Id);
-            if (match != null)
+            try
             {
-                if (match.Players.All(x => !x.Connected))
-                {
-                    var players = match.Players.ToList();
+                var player = PlayerManager.Get(Context.ConnectionId);
+                player.Disconnect();
 
-                    MatchManager.Delete(match);
-                    
-                    foreach(var p in players)
-                    {
-                        if (!MatchManager.PlayerInAnyMatch(p.Id))
-                            PlayerManager.Delete(p);
-                    }                    
-                }
-                else
+                var match = MatchManager.GetMatchForPlayer(player.Id);
+                if (match != null)
                 {
-                    await Clients.Group(match.Id).SendAsync("UpdateState", MapToDto(match));
-                }                
+                    if (match.Players.All(x => !x.Connected))
+                    {
+                        var players = match.Players.ToList();
+
+                        MatchManager.Delete(match);
+
+                        foreach (var p in players)
+                        {
+                            if (!MatchManager.PlayerInAnyMatch(p.Id))
+                                PlayerManager.Delete(p);
+                        }
+                    }
+                    else
+                    {
+                        await Clients.Group(match.Id).SendAsync("UpdateState", MapToDto(match));
+                    }
+                }
             }
+            catch(Exception e)
+            {
+                await Clients.Caller.SendAsync("Error", e.Message);
+                throw e;
+            }            
         }
 
         public async Task<MatchDto> CreateMatch()
         {
-            var player = PlayerManager.Get(Context.ConnectionId);
+            try
+            {
+                var player = PlayerManager.Get(Context.ConnectionId);
 
-            Match match = new Match(Guid.NewGuid().ToString());
-            match.AddPlayer(player);
-            MatchManager.Add(match);
+                Match match = new Match(Guid.NewGuid().ToString());
+                match.AddPlayer(player);
+                MatchManager.Add(match);
 
-            await Groups.AddToGroupAsync(player.Id, match.Id);
+                await Groups.AddToGroupAsync(player.Id, match.Id);
 
-            return MapToDto(match);
+                return MapToDto(match);
+            }
+            catch(Exception e)
+            {
+                await Clients.Caller.SendAsync("Error", e.Message);
+                throw e;
+            }            
         }
 
         public async Task<MatchDto> JoinMatch(string matchId)
         {
-            var player = PlayerManager.Get(Context.ConnectionId);
+            try
+            {
+                var player = PlayerManager.Get(Context.ConnectionId);
 
-            Match match = MatchManager.GetById(matchId);
-            match.AddPlayer(player);
+                Match match = MatchManager.GetById(matchId);
+                match.AddPlayer(player);
 
-            await Groups.AddToGroupAsync(player.Id, matchId);
+                await Groups.AddToGroupAsync(player.Id, matchId);
 
-            await Clients.Group(match.Id).SendAsync("UpdateState", MapToDto(match));
+                await Clients.Group(match.Id).SendAsync("UpdateState", MapToDto(match));
 
-            return MapToDto(match);
+                return MapToDto(match);
+            }
+            catch(Exception e)
+            {
+                await Clients.Caller.SendAsync("Error", e.Message);
+                throw e;
+            }            
         }
 
         public async Task PlayerReady(Square[][] board)
         {
-            var player = PlayerManager.Get(Context.ConnectionId);
-
-            player.Ready = true;
-            player.SetBoard(board);
-
-            Match match = MatchManager.GetMatchForPlayer(player.Id);
-            var enemy = match.Players.FirstOrDefault(x => x.Id != player.Id);           
-
-            if (enemy?.Ready == true)
+            try
             {
-                match.Started = true;
-                int index = new Random().Next(2);
-                match.WhoseTurn = match.Players[index].Id;                
-            }
+                var player = PlayerManager.Get(Context.ConnectionId);
 
-            await Clients.Group(match.Id).SendAsync("UpdateState", MapToDto(match));
+                player.Ready = true;
+                player.SetBoard(board);
+
+                Match match = MatchManager.GetMatchForPlayer(player.Id);
+                var enemy = match.Players.FirstOrDefault(x => x.Id != player.Id);
+
+                if (enemy?.Ready == true)
+                {
+                    match.Started = true;
+                    int index = new Random().Next(2);
+                    match.WhoseTurn = match.Players[index].Id;
+                }
+
+                await Clients.Group(match.Id).SendAsync("UpdateState", MapToDto(match));
+            }
+            catch(Exception e)
+            {
+                await Clients.Caller.SendAsync("Error", e.Message);
+                throw e;
+            }
         }
 
         public async Task<bool> Fire(Coords coords)
         {
-            var player = PlayerManager.Get(Context.ConnectionId);
-
-            Match match = MatchManager.GetMatchForPlayer(player.Id);
-            var enemy = match.Players.FirstOrDefault(x => x.Id != player.Id);
-            bool hit = enemy.GetFire(coords.Row, coords.Col);
-
-            await Clients.Client(enemy.Id).SendAsync("GetFire", coords);
-
-            match.WhoseTurn = enemy.Id;
-            if (enemy.HP == 0)
+            try
             {
-                match.GameOver = true;
-                match.Winner = player.Id;
-            };
-            
-            await Clients.Group(match.Id).SendAsync("UpdateState", MapToDto(match));
+                var player = PlayerManager.Get(Context.ConnectionId);
 
-            return hit;
+                Match match = MatchManager.GetMatchForPlayer(player.Id);
+                var enemy = match.Players.FirstOrDefault(x => x.Id != player.Id);
+                bool hit = enemy.GetFire(coords.Row, coords.Col);
+
+                await Clients.Client(enemy.Id).SendAsync("GetFire", coords);
+
+                match.WhoseTurn = enemy.Id;
+                if (enemy.HP == 0)
+                {
+                    match.GameOver = true;
+                    match.Winner = player.Id;
+                };
+
+                await Clients.Group(match.Id).SendAsync("UpdateState", MapToDto(match));
+
+                return hit;
+            }
+            catch(Exception e)
+            {
+                await Clients.Caller.SendAsync("Error", e.Message);
+                throw e;
+            }            
         }
 
         public class MatchDto

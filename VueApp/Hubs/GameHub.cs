@@ -9,18 +9,13 @@ namespace VueApp.Hubs
 {
     public class GameHub : Hub
     {
-        public async Task Test()
-        {
-            await Clients.Caller.SendAsync("Error", "Just kidding :)");
-        }
-
         public override async Task OnConnectedAsync()
         {
             try
             {
                 PlayerManager.Add(Context.ConnectionId);
             }
-            catch(Exception e)
+            catch(GameException e)
             {
                 await Clients.Caller.SendAsync("Error", e.Message);
             }            
@@ -28,37 +23,29 @@ namespace VueApp.Hubs
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            try
+            var player = PlayerManager.Get(Context.ConnectionId);
+            player.Disconnect();
+
+            var match = MatchManager.GetMatchForPlayer(player.Id);
+            if (match != null)
             {
-                var player = PlayerManager.Get(Context.ConnectionId);
-                player.Disconnect();
-
-                var match = MatchManager.GetMatchForPlayer(player.Id);
-                if (match != null)
+                if (match.Players.All(x => !x.Connected))
                 {
-                    if (match.Players.All(x => !x.Connected))
-                    {
-                        var players = match.Players.ToList();
+                    var players = match.Players.ToList();
 
-                        MatchManager.Delete(match);
+                    MatchManager.Delete(match);
 
-                        foreach (var p in players)
-                        {
-                            if (!MatchManager.PlayerInAnyMatch(p.Id))
-                                PlayerManager.Delete(p);
-                        }
-                    }
-                    else
+                    foreach (var p in players)
                     {
-                        await Clients.Group(match.Id).SendAsync("UpdateState", MapToDto(match));
+                        if (!MatchManager.PlayerInAnyMatch(p.Id))
+                            PlayerManager.Delete(p);
                     }
                 }
+                else
+                {
+                    await Clients.Group(match.Id).SendAsync("UpdateState", MapToDto(match));
+                }
             }
-            catch(Exception e)
-            {
-                await Clients.Caller.SendAsync("Error", e.Message);
-                throw e;
-            }            
         }
 
         public async Task<MatchDto> CreateMatch()
@@ -75,7 +62,7 @@ namespace VueApp.Hubs
 
                 return MapToDto(match);
             }
-            catch(Exception e)
+            catch(GameException e)
             {
                 await Clients.Caller.SendAsync("Error", e.Message);
                 throw e;
@@ -97,7 +84,7 @@ namespace VueApp.Hubs
 
                 return MapToDto(match);
             }
-            catch(Exception e)
+            catch(GameException e)
             {
                 await Clients.Caller.SendAsync("Error", e.Message);
                 throw e;
@@ -125,7 +112,7 @@ namespace VueApp.Hubs
 
                 await Clients.Group(match.Id).SendAsync("UpdateState", MapToDto(match));
             }
-            catch(Exception e)
+            catch(GameException e)
             {
                 await Clients.Caller.SendAsync("Error", e.Message);
                 throw e;
@@ -155,7 +142,7 @@ namespace VueApp.Hubs
 
                 return hit;
             }
-            catch(Exception e)
+            catch(GameException e)
             {
                 await Clients.Caller.SendAsync("Error", e.Message);
                 throw e;

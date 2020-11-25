@@ -13,7 +13,14 @@ namespace VueApp
         public static Match GetMatchForPlayer(string playerId) =>
             _matches.FirstOrDefault(x => x.Players.Any(y => y.Id == playerId));
 
-        public static Match GetById(string id) => _matches.FirstOrDefault(x => x.Id == id);
+        public static Match GetById(string id) 
+        {
+            var match = _matches.FirstOrDefault(x => x.Id == id);
+            if (match == null)
+                throw new GameException($"Матч с ID {id} не найден.");
+
+            return match;
+        }
 
         public static void Add(Match match) => _matches.Add(match);
 

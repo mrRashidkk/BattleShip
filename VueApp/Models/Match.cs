@@ -26,10 +26,10 @@ namespace VueApp.Models
         public void AddPlayer(PlayerInfo player)
         {
             if (Started)
-                throw new Exception("Cannot add player to started match");
+                throw new GameException("Нельзя присоединиться к начатому матчу");
 
             if (GameOver)
-                throw new Exception("Cannot add player to finished match");
+                throw new GameException("Нельзя присоединиться к завершенному матчу");
 
             int count = players.Count;
 
@@ -40,11 +40,11 @@ namespace VueApp.Models
                     break;
                 case 1:
                     if (players[0].Id == player.Id)
-                        throw new ArgumentException("Cannot add the same player twice");
+                        throw new GameException("Вы уже присоединились к этому матчу");
                     players.Add(player);
                     break;
                 case 2:
-                    throw new Exception("Only 2 players can play!");
+                    throw new GameException("В игре не может быть больше 2 игроков");
             }            
         }
     }

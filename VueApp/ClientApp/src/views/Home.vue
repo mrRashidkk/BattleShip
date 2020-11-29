@@ -26,7 +26,8 @@
 <style>
   .main-bg {
     height: 100%;
-    background: url("../assets/cruiser.jpg") center no-repeat;
+    background: url("../assets/cruiser.jpg") no-repeat center center fixed;
+    background-size: cover;
   }
   .home {
     position: absolute;

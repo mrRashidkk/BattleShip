@@ -57,7 +57,7 @@ namespace VueApp.Hubs
             catch(GameException e)
             {
                 await Clients.Caller.SendAsync("Error", e.Message);
-                throw e;
+                throw;
             }            
         }
 
@@ -79,7 +79,7 @@ namespace VueApp.Hubs
             catch(GameException e)
             {
                 await Clients.Caller.SendAsync("Error", e.Message);
-                throw e;
+                throw;
             }            
         }
 
@@ -107,7 +107,7 @@ namespace VueApp.Hubs
             catch(GameException e)
             {
                 await Clients.Caller.SendAsync("Error", e.Message);
-                throw e;
+                throw;
             }
         }
 
@@ -137,7 +137,7 @@ namespace VueApp.Hubs
             catch(GameException e)
             {
                 await Clients.Caller.SendAsync("Error", e.Message);
-                throw e;
+                throw;
             }            
         }       
 

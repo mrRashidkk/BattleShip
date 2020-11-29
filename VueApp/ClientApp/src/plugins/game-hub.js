@@ -3,7 +3,7 @@ import { HubConnectionBuilder } from '@microsoft/signalr';
 export default {
     install (Vue) {
         const connection = new HubConnectionBuilder()
-            .withUrl("http://localhost:50725/game-hub")
+            .withUrl("/game-hub")
             .build();
 
         const gameHub = new Vue(); 

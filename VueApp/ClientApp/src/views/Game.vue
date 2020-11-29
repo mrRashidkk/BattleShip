@@ -35,7 +35,7 @@
         </b-row>
         <b-row>        
             <b-col v-if="notLaunchedShips.length > 0" id="dock">
-                <p>Перетащите корабли на свое поле.<br>Чтобы повернуть корабль, кликните по нему дважды.</p>
+                <p>Перетащите корабли на свое поле.<br>Чтобы повернуть корабль на поле, кликните по нему дважды.</p>
                 <ship v-for="ship in notLaunchedShips"
                     :key="ship.id"
                     :shipInfo="ship"

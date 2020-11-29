@@ -12,7 +12,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using VueApp.Hubs;
-
 namespace VueApp
 {
     public class Startup
@@ -27,13 +26,9 @@ namespace VueApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
-
             services.AddSpaStaticFiles(options => options.RootPath = "ClientApp/dist");
 
             services.AddSignalR();
-
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -48,18 +43,12 @@ namespace VueApp
 
             app.UseRouting();
 
-            app.UseAuthentication();
-            app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();
                 endpoints.MapHub<GameHub>("/game-hub");
             });
 
             app.UseSpaStaticFiles();
-
-            app.UseMiddleware<AppAuthenticationMiddleware>();
 
             app.UseSpa(configuration: builder =>
             {

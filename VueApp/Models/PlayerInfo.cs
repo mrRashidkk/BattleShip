@@ -41,6 +41,9 @@ namespace VueApp.Models
         public bool GetFire(int row, int col)
         {
             var square = Board[row][col];
+            if (square.Boom)
+                throw new GameException("Вы уже стреляли по этой клетке!");
+
             square.Boom = true;
             if (square.Taken) HP--;
             return square.Taken;

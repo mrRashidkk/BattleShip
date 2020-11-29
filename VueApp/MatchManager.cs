@@ -22,7 +22,12 @@ namespace VueApp
             return match;
         }
 
-        public static void Add(Match match) => _matches.Add(match);
+        public static Match Add(string id) 
+        {
+            Match match = new Match(id);
+            _matches.Add(match);
+            return match;
+        }
 
         public static void Delete(Match match) => _matches.Remove(match);
 

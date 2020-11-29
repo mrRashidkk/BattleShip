@@ -11,14 +11,7 @@ namespace VueApp.Hubs
     {
         public override async Task OnConnectedAsync()
         {
-            try
-            {
-                PlayerManager.Add(Context.ConnectionId);
-            }
-            catch(GameException e)
-            {
-                await Clients.Caller.SendAsync("Error", e.Message);
-            }            
+            PlayerManager.Add(Context.ConnectionId);
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
@@ -53,10 +46,9 @@ namespace VueApp.Hubs
             try
             {
                 var player = PlayerManager.Get(Context.ConnectionId);
-
-                Match match = new Match(Guid.NewGuid().ToString());
+                
+                Match match = MatchManager.Add(Guid.NewGuid().ToString());
                 match.AddPlayer(player);
-                MatchManager.Add(match);
 
                 await Groups.AddToGroupAsync(player.Id, match.Id);
 
@@ -147,17 +139,7 @@ namespace VueApp.Hubs
                 await Clients.Caller.SendAsync("Error", e.Message);
                 throw e;
             }            
-        }
-
-        public class MatchDto
-        {
-            public string Id { get; set; }
-            public bool GameOver { get; set; }
-            public string Winner { get; set; }
-            public string WhoseTurn { get; set; }
-            public bool Started { get; set; }
-            public List<PlayerDto> Players { get; set; }
-        }
+        }       
 
         private MatchDto MapToDto(Match match)
         {
@@ -175,19 +157,6 @@ namespace VueApp.Hubs
                     Ready = x.Ready
                 }).ToList()
             };
-        }
-
-        public class PlayerDto
-        {
-            public string Id { get; set; }
-            public bool Connected { get; set; }
-            public bool Ready { get; set; }
-        }
-
-        public class Coords
-        {
-            public int Row { get; set; }
-            public int Col { get; set; }
-        }
+        }        
     }
 }

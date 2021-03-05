@@ -17,27 +17,51 @@ namespace VueApp.Hubs
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             var player = PlayerManager.Get(Context.ConnectionId);
-            player.Connected = false;
 
             var match = MatchManager.GetMatchForPlayer(player.Id);
             if (match != null)
             {
-                if (match.Players.All(x => !x.Connected))
+                match.RemovePlayer(player);
+                PlayerManager.Delete(player);
+
+                if (!match.Players.Any())
                 {
-                    var players = match.Players.ToList();
-
-                    MatchManager.Delete(match);
-
-                    foreach (var p in players)
-                    {
-                        if (!MatchManager.PlayerInAnyMatch(p.Id))
-                            PlayerManager.Delete(p);
-                    }
+                    MatchManager.Remove(match);                    
                 }
                 else
                 {
+                    match.State = MatchState.OnePlayerDisconnected;
                     await Clients.Group(match.Id).SendAsync("UpdateState", MatchManager.MapToDto(match));
                 }
+            }
+        }
+
+        public async Task LeaveMatch(string matchId)
+        {
+            try
+            {
+                matchId = matchId.Trim();
+
+                var player = PlayerManager.Get(Context.ConnectionId);
+                player.Reset();
+
+                var match = MatchManager.GetById(matchId);
+                match.RemovePlayer(player);
+
+                if (!match.Players.Any())
+                {
+                    MatchManager.Remove(match);
+                }
+                else
+                {
+                    match.State = MatchState.OnePlayerDisconnected;
+                    await Clients.Group(match.Id).SendAsync("UpdateState", MatchManager.MapToDto(match));
+                }                
+            }
+            catch (GameException e)
+            {
+                await Clients.Caller.SendAsync("Error", e.Message);
+                throw;
             }
         }
 
@@ -47,7 +71,6 @@ namespace VueApp.Hubs
             {
                 var player = PlayerManager.Get(Context.ConnectionId);
                 player.Reset();
-                player.Connected = true;
 
                 Match match = MatchManager.Add(Guid.NewGuid().ToString());
                 match.AddPlayer(player);
@@ -71,10 +94,10 @@ namespace VueApp.Hubs
 
                 var player = PlayerManager.Get(Context.ConnectionId);
                 player.Reset();
-                player.Connected = true;
 
                 Match match = MatchManager.GetById(matchId);
                 match.AddPlayer(player);
+                match.State = MatchState.LaunchingShips;
 
                 await Groups.AddToGroupAsync(player.Id, matchId);
 
@@ -87,28 +110,7 @@ namespace VueApp.Hubs
                 await Clients.Caller.SendAsync("Error", e.Message);
                 throw;
             }            
-        }
-
-        public async Task LeaveMatch(string matchId)
-        {
-            try
-            {
-                matchId = matchId.Trim();
-
-                var player = PlayerManager.Get(Context.ConnectionId);
-                player.Reset();
-                player.Connected = false;
-
-                var match = MatchManager.GetById(matchId);
-
-                await Clients.Group(matchId).SendAsync("UpdateState", MatchManager.MapToDto(match));
-            }
-            catch (GameException e)
-            {
-                await Clients.Caller.SendAsync("Error", e.Message);
-                throw;
-            }
-        }
+        }        
 
         public async Task PlayerReady(Square[][] board)
         {
@@ -123,9 +125,8 @@ namespace VueApp.Hubs
 
                 if (enemy?.Ready == true)
                 {
-                    match.Started = true;
-                    int index = new Random().Next(2);
-                    match.WhoseTurn = match.Players[index].Id;
+                    match.State = MatchState.InProgress;
+                    match.SetWhoseTurn();
                 }
 
                 await Clients.Group(match.Id).SendAsync("UpdateState", MatchManager.MapToDto(match));
@@ -152,7 +153,7 @@ namespace VueApp.Hubs
                 match.WhoseTurn = enemy.Id;
                 if (enemy.HP == 0)
                 {
-                    match.GameOver = true;
+                    match.State = MatchState.Finished;
                     match.Winner = player.Id;
                 };
 

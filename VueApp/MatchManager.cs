@@ -29,24 +29,19 @@ namespace VueApp
             return match;
         }
 
-        public static void Delete(Match match) => _matches.Remove(match);
-
-        public static bool PlayerInAnyMatch(string playerId) =>
-            _matches.Any(x => x.Players.Any(y => y.Id == playerId));
+        public static void Remove(Match match) => _matches.Remove(match);        
 
         public static MatchDto MapToDto(Match match)
         {
             return new MatchDto
             {
                 Id = match.Id,
-                GameOver = match.GameOver,
                 Winner = match.Winner,
                 WhoseTurn = match.WhoseTurn,
-                Started = match.Started,
+                State = match.State,
                 Players = match.Players.Select(x => new PlayerDto
                 {
                     Id = x.Id,
-                    Connected = x.Connected,
                     Ready = x.Ready
                 }).ToList()
             };

@@ -8,10 +8,9 @@ namespace VueApp.Models
     public class MatchDto
     {
         public string Id { get; set; }
-        public bool GameOver { get; set; }
         public string Winner { get; set; }
         public string WhoseTurn { get; set; }
-        public bool Started { get; set; }
+        public MatchState State { get; set; }
         public List<PlayerDto> Players { get; set; }
     }
 }

@@ -8,38 +8,49 @@ namespace VueApp.Models
     public class Match
     {
         public readonly string Id;
-        public List<PlayerInfo> Players { get; } = new List<PlayerInfo>();
+        private List<PlayerInfo> _players = new List<PlayerInfo>();
+        public IReadOnlyCollection<PlayerInfo> Players => _players;
 
         public string WhoseTurn;
-        public bool Started;
-        public bool GameOver;
         public string Winner;
+        public MatchState State;
 
         public Match(string id)
         {
             Id = id;
+            State = MatchState.AwaitingOpponent;
+        }
+
+        public void SetWhoseTurn()
+        {
+            int index = new Random().Next(2);
+            WhoseTurn = _players[index].Id;
         }
         
+        public void RemovePlayer(PlayerInfo player)
+        {
+            _players.Remove(player);
+        }
 
         public void AddPlayer(PlayerInfo player)
         {
-            if (Started)
+            if (State == MatchState.InProgress)
                 throw new GameException("Нельзя присоединиться к начатому матчу");
 
-            if (GameOver)
+            if (State == MatchState.Finished)
                 throw new GameException("Нельзя присоединиться к завершенному матчу");
 
-            int count = Players.Count;
+            int count = _players.Count;
 
             switch(count)
             {
                 case 0:
-                    Players.Add(player);
+                    _players.Add(player);
                     break;
                 case 1:
-                    if (Players[0].Id == player.Id)
+                    if (_players[0].Id == player.Id)
                         throw new GameException("Вы уже присоединились к этому матчу");
-                    Players.Add(player);
+                    _players.Add(player);
                     break;
                 case 2:
                     throw new GameException("В игре не может быть больше 2 игроков");

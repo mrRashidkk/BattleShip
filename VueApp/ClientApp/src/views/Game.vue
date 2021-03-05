@@ -2,13 +2,13 @@
     <b-container fluid class="game">
         <b-row align-v="start">
             <b-col>
-                <b-alert v-if="enemy == null" variant="primary" show>
+                <b-alert v-if="matchInfo.state == MATCH_STATES.AwaitingOpponent" variant="primary" show>
                     <strong>Чтобы позвать друга, сообщите ему ID матча:</strong> {{matchInfo.id}}
                 </b-alert>
-                <b-alert v-else-if="!enemy.connected" variant="danger" show>
+                <b-alert v-else-if="matchInfo.state == MATCH_STATES.OnePlayerDisconnected" variant="danger" show>
                     Соперник отключился от игры
                 </b-alert>                
-                <b-alert v-else-if="!matchInfo.started" variant="primary" show>
+                <b-alert v-else-if="matchInfo.state == MATCH_STATES.LaunchingShips" variant="primary" show>
                     <span v-if="!enemy.ready">
                         Соперник подключен и расставляет корабли. 
                     </span>
@@ -19,10 +19,10 @@
                         Расставьте корабли и нажмите "Готов к игре"
                     </span>
                 </b-alert>
-                <b-alert v-else-if="matchInfo.gameOver && matchInfo.winner != myId" variant="danger" show>
+                <b-alert v-else-if="matchInfo.state == MATCH_STATES.Finished && matchInfo.winner != myId" variant="danger" show>
                     Вы проиграли
                 </b-alert>
-                <b-alert v-else-if="matchInfo.gameOver && matchInfo.winner == myId" variant="success" show>
+                <b-alert v-else-if="matchInfo.state == MATCH_STATES.Finished && matchInfo.winner == myId" variant="success" show>
                     Вы выиграли
                 </b-alert>
                 <b-alert v-else-if="myTurn" variant="primary" show>
@@ -166,7 +166,14 @@ export default {
             ],
             draggedShip: null,
             selectedIndex: 0,
-            matchInfo: this.match
+            matchInfo: this.match,
+            MATCH_STATES: {
+                AwaitingOpponent: 0,
+                LaunchingShips: 1,
+                InProgress: 2,
+                OnePlayerDisconnected: 3,
+                Finished: 4
+            }
         }
     },    
     computed: {
@@ -176,11 +183,11 @@ export default {
         notLaunchedShips() {
             return this.ships.filter(x => !x.launched);
         },
-        enemyBoardClassList() {
-            if (this.enemy == null || !this.enemy.connected || !this.myTurn || this.matchInfo.gameOver) {
-                return "board disabled"
+        enemyBoardClassList() {            
+            if (this.myTurn && this.matchInfo.state == this.MATCH_STATES.InProgress) {
+                return "board active";
             }
-            return "board active";
+            return "board disabled"
         },
         myId() {
             return this.$store.state.myId;
@@ -207,7 +214,7 @@ export default {
             this.matchInfo = match;
         },
         fire(row, col) {
-            if (this.myTurn && !this.matchInfo.gameOver) {
+            if (this.myTurn && this.matchInfo.state == this.MATCH_STATES.InProgress) {
                 const targetSquare = this.enemySquares[row][col];
                 if (targetSquare.boom) return;
 
@@ -340,34 +347,34 @@ export default {
             }
         },
         drop(e, overRow, overColumn) {
-            if (this.matchInfo.started) return false;
-            
-            let start;
-            if (this.draggedShip.horizontal) {
-                start = overColumn - this.selectedIndex;
-            }
-            else {
-                start = overRow - this.selectedIndex;
-            }           
-
-            if (this.isShipOnBoard(start, this.draggedShip.length)) {
-                let rowStart;
-                let colStart;
+            if (this.matchInfo.state == this.MATCH_STATES.AwaitingOpponent || this.matchInfo.state == this.MATCH_STATES.LaunchingShips) {
+                let start;
                 if (this.draggedShip.horizontal) {
-                    rowStart = overRow;
-                    colStart = start;
+                    start = overColumn - this.selectedIndex;
                 }
                 else {
-                    rowStart = start;
-                    colStart = overColumn;
-                }                
+                    start = overRow - this.selectedIndex;
+                }           
 
-                if (this.squaresAvailable(rowStart, colStart, this.draggedShip.horizontal, this.draggedShip.length)) {
-                    this.draggedShip.row = rowStart;
-                    this.draggedShip.col = colStart;
-                    this.draggedShip.launched = true;
-                }            
-            }
+                if (this.isShipOnBoard(start, this.draggedShip.length)) {
+                    let rowStart;
+                    let colStart;
+                    if (this.draggedShip.horizontal) {
+                        rowStart = overRow;
+                        colStart = start;
+                    }
+                    else {
+                        rowStart = start;
+                        colStart = overColumn;
+                    }                
+
+                    if (this.squaresAvailable(rowStart, colStart, this.draggedShip.horizontal, this.draggedShip.length)) {
+                        this.draggedShip.row = rowStart;
+                        this.draggedShip.col = colStart;
+                        this.draggedShip.launched = true;
+                    }
+                }
+            }            
         },
         isShipOnBoard(start, shipLength) {
             const end = start + shipLength - 1;

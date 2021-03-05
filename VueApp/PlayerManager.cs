@@ -7,7 +7,7 @@ using VueApp.Models;
 
 namespace VueApp
 {
-    public class PlayerManager
+    public static class PlayerManager
     {
         private static List<PlayerInfo> _players = new List<PlayerInfo>();
 

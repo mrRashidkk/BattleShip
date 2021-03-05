@@ -6,7 +6,7 @@ using VueApp.Models;
 
 namespace VueApp
 {
-    public class MatchManager
+    public static class MatchManager
     {
         private static List<Match> _matches = new List<Match>();
 
@@ -33,5 +33,23 @@ namespace VueApp
 
         public static bool PlayerInAnyMatch(string playerId) =>
             _matches.Any(x => x.Players.Any(y => y.Id == playerId));
+
+        public static MatchDto MapToDto(Match match)
+        {
+            return new MatchDto
+            {
+                Id = match.Id,
+                GameOver = match.GameOver,
+                Winner = match.Winner,
+                WhoseTurn = match.WhoseTurn,
+                Started = match.Started,
+                Players = match.Players.Select(x => new PlayerDto
+                {
+                    Id = x.Id,
+                    Connected = x.Connected,
+                    Ready = x.Ready
+                }).ToList()
+            };
+        }
     }
 }

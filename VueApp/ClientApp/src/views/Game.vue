@@ -177,7 +177,7 @@ export default {
             return this.ships.filter(x => !x.launched);
         },
         enemyBoardClassList() {
-            if (this.enemy == null || !this.enemy.connected || !this.myTurn) {
+            if (this.enemy == null || !this.enemy.connected || !this.myTurn || this.matchInfo.gameOver) {
                 return "board disabled"
             }
             return "board active";
@@ -207,7 +207,7 @@ export default {
             this.matchInfo = match;
         },
         fire(row, col) {
-            if (this.myTurn) {
+            if (this.myTurn && !this.matchInfo.gameOver) {
                 const targetSquare = this.enemySquares[row][col];
                 if (targetSquare.boom) return;
 
@@ -427,6 +427,7 @@ export default {
     beforeDestroy() {
         this.$gameHub.$off("get-fire", this.onGetFire);
         this.$gameHub.$off("update-state", this.onUpdateState);
+        this.$gameHub.leaveMatch(this.matchInfo.id);
     }
 }
 </script>

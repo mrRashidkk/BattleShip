@@ -9,12 +9,11 @@ namespace VueApp.Models
     {
         public readonly string Id;
         public List<PlayerInfo> Players { get; } = new List<PlayerInfo>();
-        
-        public string WhoseTurn { get; set; }
-        
-        public bool Started { get; set; }
-        public bool GameOver { get; set; }
-        public string Winner { get; set; }
+
+        public string WhoseTurn;
+        public bool Started;
+        public bool GameOver;
+        public string Winner;
 
         public Match(string id)
         {

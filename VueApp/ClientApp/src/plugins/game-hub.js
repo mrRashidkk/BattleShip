@@ -19,6 +19,10 @@ export default {
             return connection.invoke('JoinMatch', matchId);
         }
 
+        gameHub.leaveMatch = (matchId) => {
+            return connection.invoke('LeaveMatch', matchId);
+        }
+
         gameHub.playerReady = (board) => {
             return connection.invoke('PlayerReady', board);
         }

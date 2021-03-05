@@ -8,19 +8,18 @@ namespace VueApp.Models
     public class PlayerInfo
     {
         public readonly string Id;
-        public bool Connected { get; private set; }
-        private Square[][] Board = new Square[10][];
+        public bool Connected;
+        public bool Ready;
         public int HP { get; private set; } = 20;
-        public bool Ready { get; set; }
+        private Square[][] Board = new Square[10][];        
 
         public PlayerInfo(string clientId)
         {
             Id = clientId;
-            Connected = true;
-            CreateBoard();
+            SetEmptyBoard();
         }
 
-        private void CreateBoard()
+        private void SetEmptyBoard()
         {
             for(int row = 0; row < 10; row++)
             {
@@ -49,9 +48,11 @@ namespace VueApp.Models
             return square.Taken;
         }
 
-        public void Disconnect()
+        public void Reset()
         {
-            Connected = false;
-        }
+            SetEmptyBoard();
+            HP = 20;
+            Ready = false;
+        }        
     }
 }

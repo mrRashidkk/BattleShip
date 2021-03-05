@@ -17,7 +17,7 @@ namespace VueApp.Hubs
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             var player = PlayerManager.Get(Context.ConnectionId);
-            player.Disconnect();
+            player.Connected = false;
 
             var match = MatchManager.GetMatchForPlayer(player.Id);
             if (match != null)
@@ -36,7 +36,7 @@ namespace VueApp.Hubs
                 }
                 else
                 {
-                    await Clients.Group(match.Id).SendAsync("UpdateState", MapToDto(match));
+                    await Clients.Group(match.Id).SendAsync("UpdateState", MatchManager.MapToDto(match));
                 }
             }
         }
@@ -46,13 +46,15 @@ namespace VueApp.Hubs
             try
             {
                 var player = PlayerManager.Get(Context.ConnectionId);
-                
+                player.Reset();
+                player.Connected = true;
+
                 Match match = MatchManager.Add(Guid.NewGuid().ToString());
                 match.AddPlayer(player);
 
                 await Groups.AddToGroupAsync(player.Id, match.Id);
 
-                return MapToDto(match);
+                return MatchManager.MapToDto(match);
             }
             catch(GameException e)
             {
@@ -65,16 +67,20 @@ namespace VueApp.Hubs
         {
             try
             {
+                matchId = matchId.Trim();
+
                 var player = PlayerManager.Get(Context.ConnectionId);
+                player.Reset();
+                player.Connected = true;
 
                 Match match = MatchManager.GetById(matchId);
                 match.AddPlayer(player);
 
                 await Groups.AddToGroupAsync(player.Id, matchId);
 
-                await Clients.Group(match.Id).SendAsync("UpdateState", MapToDto(match));
+                await Clients.Group(match.Id).SendAsync("UpdateState", MatchManager.MapToDto(match));
 
-                return MapToDto(match);
+                return MatchManager.MapToDto(match);
             }
             catch(GameException e)
             {
@@ -83,12 +89,32 @@ namespace VueApp.Hubs
             }            
         }
 
+        public async Task LeaveMatch(string matchId)
+        {
+            try
+            {
+                matchId = matchId.Trim();
+
+                var player = PlayerManager.Get(Context.ConnectionId);
+                player.Reset();
+                player.Connected = false;
+
+                var match = MatchManager.GetById(matchId);
+
+                await Clients.Group(matchId).SendAsync("UpdateState", MatchManager.MapToDto(match));
+            }
+            catch (GameException e)
+            {
+                await Clients.Caller.SendAsync("Error", e.Message);
+                throw;
+            }
+        }
+
         public async Task PlayerReady(Square[][] board)
         {
             try
             {
                 var player = PlayerManager.Get(Context.ConnectionId);
-
                 player.Ready = true;
                 player.SetBoard(board);
 
@@ -102,7 +128,7 @@ namespace VueApp.Hubs
                     match.WhoseTurn = match.Players[index].Id;
                 }
 
-                await Clients.Group(match.Id).SendAsync("UpdateState", MapToDto(match));
+                await Clients.Group(match.Id).SendAsync("UpdateState", MatchManager.MapToDto(match));
             }
             catch(GameException e)
             {
@@ -130,7 +156,7 @@ namespace VueApp.Hubs
                     match.Winner = player.Id;
                 };
 
-                await Clients.Group(match.Id).SendAsync("UpdateState", MapToDto(match));
+                await Clients.Group(match.Id).SendAsync("UpdateState", MatchManager.MapToDto(match));
 
                 return hit;
             }
@@ -139,24 +165,6 @@ namespace VueApp.Hubs
                 await Clients.Caller.SendAsync("Error", e.Message);
                 throw;
             }            
-        }       
-
-        private MatchDto MapToDto(Match match)
-        {
-            return new MatchDto
-            {
-                Id = match.Id,
-                GameOver = match.GameOver,
-                Winner = match.Winner,
-                WhoseTurn = match.WhoseTurn,
-                Started = match.Started,
-                Players = match.Players.Select(x => new PlayerDto
-                {
-                    Id = x.Id,
-                    Connected = x.Connected,
-                    Ready = x.Ready
-                }).ToList()
-            };
-        }        
+        }                
     }
 }

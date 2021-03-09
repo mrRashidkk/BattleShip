@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace VueApp.Models
+namespace BattleShip.Entities
 {
     public class Match
     {
         public readonly string Id;
-        private List<PlayerInfo> _players = new List<PlayerInfo>();
-        public IReadOnlyCollection<PlayerInfo> Players => _players;
+        private List<Player> _players = new List<Player>();
+        public IReadOnlyCollection<Player> Players => _players;
 
         public string WhoseTurn;
         public string Winner;
@@ -27,12 +25,12 @@ namespace VueApp.Models
             WhoseTurn = _players[index].Id;
         }
         
-        public void RemovePlayer(PlayerInfo player)
+        public void RemovePlayer(Player player)
         {
             _players.Remove(player);
         }
 
-        public void AddPlayer(PlayerInfo player)
+        public void AddPlayer(Player player)
         {
             if (State == MatchState.InProgress)
                 throw new GameException("Нельзя присоединиться к начатому матчу");

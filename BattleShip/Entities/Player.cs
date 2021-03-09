@@ -1,20 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace VueApp.Models
+﻿namespace BattleShip.Entities
 {
-    public class PlayerInfo
+    public class Player
     {
         public readonly string Id;
         public bool Ready;
         public int HP { get; private set; } = 20;
         private Square[][] Board = new Square[10][];        
 
-        public PlayerInfo(string clientId)
+        public Player(string id)
         {
-            Id = clientId;
+            Id = id;
             SetEmptyBoard();
         }
 

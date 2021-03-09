@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using VueApp.Models;
+using BattleShip.Entities;
+using BattleShip.Models;
 
-namespace VueApp.Hubs
+namespace BattleShip.Hubs
 {
     public class GameHub : Hub
     {

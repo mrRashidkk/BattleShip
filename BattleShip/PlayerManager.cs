@@ -8,13 +8,16 @@ namespace BattleShip
     public static class PlayerManager
     {
         private static List<Player> _players = new List<Player>();
+        public static IReadOnlyCollection<Player> Players => _players;
 
-        public static void Add(string id)
+        public static Player Add(string id)
         {
             if (_players.Any(x => x.Id == id))
                 throw new ArgumentException($"Player with ID {id} already exists.");
 
-            _players.Add(new Player(id));
+            Player player = new Player(id);
+            _players.Add(player);
+            return player;
         }
 
         public static Player Get(string id) =>

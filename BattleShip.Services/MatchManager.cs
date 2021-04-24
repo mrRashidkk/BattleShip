@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using BattleShip.Common.Helpers;
 using BattleShip.Entities;
 using BattleShip.Interfaces;
 using BattleShip.Models;
@@ -8,30 +9,28 @@ namespace BattleShip.Services
 {
     public class MatchManager : IMatchManager
     {
-        private List<Match> _matches = new List<Match>();
+        private readonly List<Match> _matches = new List<Match>();
+
+        public int Count => _matches.Count;
 
         public Match GetMatchForPlayer(string playerId) =>
-            _matches.FirstOrDefault(x => x.Players.Any(y => y.Id == playerId));
+            _matches.FirstOrDefault(x => x.Players.Any(y => y.Id.IsEqual(playerId)));
 
         public Match GetById(string id) 
         {
-            var match = _matches.FirstOrDefault(x => x.Id == id);
+            var match = _matches
+                .FirstOrDefault(x => x.Id.IsEqual(id));
             if (match == null)
                 throw new GameException($"Матч с ID {id} не найден.");
 
             return match;
         }
 
-        public Match Add(string id) 
-        {
-            Match match = new Match(id);
-            _matches.Add(match);
-            return match;
-        }
+        public void Add(Match match) => _matches.Add(match);
 
-        public void Remove(Match match) => _matches.Remove(match);        
+        public void Remove(string id) => _matches.RemoveAll(x => x.Id.IsEqual(id));        
 
-        public MatchModel MapToDto(Match match)
+        public MatchModel MapToModel(Match match)
         {
             return new MatchModel
             {

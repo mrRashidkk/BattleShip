@@ -7,8 +7,9 @@ namespace BattleShip.Interfaces
 {
     public interface IPlayerManager
     {
-        Player Add(string id);
+        int Count { get; }
+        void Add(Player player);
         Player Get(string id);
-        void Delete(Player player);
+        void Remove(string id);        
     }
 }

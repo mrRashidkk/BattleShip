@@ -4,7 +4,7 @@
     {
         private Square[][] Board = new Square[10][];
         public readonly string Id;
-        public bool Ready;
+        public bool Ready { get; private set; }
         public int HP { get; private set; } = 20;              
 
         public Player(string id)
@@ -29,6 +29,7 @@
         public void SetBoard(Square[][] board)
         {
             Board = board;
+            Ready = true;
         }
 
         public bool GetFire(int row, int col)

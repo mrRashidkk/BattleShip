@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using BattleShip.Common;
+using BattleShip.Common.Enums;
 
 namespace BattleShip.Models
 {

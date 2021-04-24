@@ -1,4 +1,5 @@
 using BattleShip.Entities;
+using BattleShip.Services;
 using System;
 using System.Linq;
 using Xunit;
@@ -7,24 +8,30 @@ namespace BattleShip.Tests
 {
     public class PlayerManagerTests
     {
-        //[Fact]
-        //public void Add_TheSamePlayerShouldFail()
-        //{
-        //    string id = Guid.NewGuid().ToString();
+        [Fact]
+        public void Add_TheSamePlayerTwice_ShouldFail()
+        {
+            PlayerManager playerManager = new PlayerManager();
+            Player player = new Player(Guid.NewGuid().ToString());
 
-        //    PlayerManager.Add(id);
+            playerManager.Add(player);
 
-        //    Assert.Throws<ArgumentException>(() => PlayerManager.Add(id));
-        //}
+            Assert.Throws<ArgumentException>(() => playerManager.Add(player));
+        }
 
-        //[Fact]
-        //public void Delete_ShouldDecreaseNumberOfPlayersByOne()
-        //{
-        //    PlayerManager.Add(Guid.NewGuid().ToString());
-        //    Player player = PlayerManager.Add(Guid.NewGuid().ToString());
-        //    PlayerManager.Delete(player);
+        [Fact]
+        public void Remove_OnePlayer_ShouldDecreaseNumberOfPlayersByOne()
+        {
+            PlayerManager playerManager = new PlayerManager();
+            Player player1 = new Player(Guid.NewGuid().ToString());
+            Player player2 = new Player(Guid.NewGuid().ToString());
+            playerManager.Add(player1);
+            playerManager.Add(player2);
+            int countBeforeRemove = playerManager.Count;
 
-        //    Assert.Equal(1, PlayerManager.Players.Count);
-        //}
+            playerManager.Remove(player2.Id);
+
+            Assert.Equal(countBeforeRemove - 1, playerManager.Count);
+        }
     }
 }

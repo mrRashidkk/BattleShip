@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using BattleShip.Common.Helpers;
 using BattleShip.Entities;
 using BattleShip.Interfaces;
 
@@ -10,21 +11,18 @@ namespace BattleShip.Services
     {
         private readonly List<Player> _players = new List<Player>();
 
-        public Player Add(string id)
-        {
-            if (_players.Any(x => x.Id == id))
-                throw new ArgumentException($"Игрок с ID {id} уже существует.");
+        public int Count => _players.Count;
 
-            Player player = new Player(id);
+        public void Add(Player player)
+        {
+            if (_players.Any(x => x.Id.IsEqual(player.Id)))
+                throw new ArgumentException($"Игрок с ID {player.Id} уже существует.");
+
             _players.Add(player);
-            return player;
         }
 
-        public Player Get(string id) =>
-            _players.FirstOrDefault(x => x.Id == id);
-        
+        public Player Get(string id) => _players.FirstOrDefault(x => x.Id.IsEqual(id));
 
-        public void Delete(Player player) =>
-            _players.Remove(player);
+        public void Remove(string id) => _players.RemoveAll(x => x.Id.IsEqual(id));
     }
 }

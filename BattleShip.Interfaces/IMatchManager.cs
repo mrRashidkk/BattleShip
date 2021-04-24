@@ -5,10 +5,11 @@ namespace BattleShip.Interfaces
 {
     public interface IMatchManager
     {
+        int Count { get; }
         Match GetMatchForPlayer(string playerId);
         Match GetById(string id);
-        Match Add(string id);
-        void Remove(Match match);
-        MatchModel MapToDto(Match match);
+        void Add(Match match);
+        void Remove(string id);
+        MatchModel MapToModel(Match match);
     }
 }

@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BattleShip\BattleShip.Web.csproj" />
+    <ProjectReference Include="..\BattleShip.Services\BattleShip.Services.csproj" />
   </ItemGroup>
 
 </Project>

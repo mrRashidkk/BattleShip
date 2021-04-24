@@ -1,4 +1,4 @@
-﻿namespace BattleShip.Entities
+﻿namespace BattleShip.Common
 {
     public enum MatchState
     {

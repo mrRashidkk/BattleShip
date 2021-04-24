@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using BattleShip.Hubs;
+using BattleShip.Interfaces;
+using BattleShip.Services;
 
 namespace BattleShip
 {
@@ -22,6 +24,9 @@ namespace BattleShip
             services.AddSpaStaticFiles(options => options.RootPath = "ClientApp/dist");
 
             services.AddSignalR();
+
+            services.AddSingleton<IPlayerManager, PlayerManager>();
+            services.AddSingleton<IMatchManager, MatchManager>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

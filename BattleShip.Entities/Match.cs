@@ -1,14 +1,14 @@
-﻿using System;
+﻿using BattleShip.Common;
+using System;
 using System.Collections.Generic;
 
 namespace BattleShip.Entities
 {
     public class Match
     {
-        public readonly string Id;
-        private List<Player> _players = new List<Player>();
+        private readonly List<Player> _players = new List<Player>();
+        public readonly string Id;        
         public IReadOnlyCollection<Player> Players => _players;
-
         public string WhoseTurn;
         public string Winner;
         public MatchState State;
@@ -25,10 +25,7 @@ namespace BattleShip.Entities
             WhoseTurn = _players[index].Id;
         }
         
-        public void RemovePlayer(Player player)
-        {
-            _players.Remove(player);
-        }
+        public void RemovePlayer(Player player) => _players.Remove(player);
 
         public void AddPlayer(Player player)
         {

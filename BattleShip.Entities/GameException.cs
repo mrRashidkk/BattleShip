@@ -6,7 +6,6 @@ namespace BattleShip.Entities
     {
         public GameException(string message) : base(message)
         {
-
         }
     }
 }

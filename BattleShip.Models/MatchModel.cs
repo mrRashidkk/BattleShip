@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
-using BattleShip.Entities;
+using BattleShip.Common;
 
 namespace BattleShip.Models
 {
-    public class MatchDto
+    public class MatchModel
     {
         public string Id { get; set; }
         public string Winner { get; set; }
         public string WhoseTurn { get; set; }
         public MatchState State { get; set; }
-        public List<PlayerDto> Players { get; set; }
+        public List<PlayerModel> Players { get; set; }
     }
 }

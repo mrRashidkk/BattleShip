@@ -1,18 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using BattleShip.Entities;
+using BattleShip.Interfaces;
 using BattleShip.Models;
 
-namespace BattleShip
+namespace BattleShip.Services
 {
-    public static class MatchManager
+    public class MatchManager : IMatchManager
     {
-        private static List<Match> _matches = new List<Match>();
+        private List<Match> _matches = new List<Match>();
 
-        public static Match GetMatchForPlayer(string playerId) =>
+        public Match GetMatchForPlayer(string playerId) =>
             _matches.FirstOrDefault(x => x.Players.Any(y => y.Id == playerId));
 
-        public static Match GetById(string id) 
+        public Match GetById(string id) 
         {
             var match = _matches.FirstOrDefault(x => x.Id == id);
             if (match == null)
@@ -21,24 +22,24 @@ namespace BattleShip
             return match;
         }
 
-        public static Match Add(string id) 
+        public Match Add(string id) 
         {
             Match match = new Match(id);
             _matches.Add(match);
             return match;
         }
 
-        public static void Remove(Match match) => _matches.Remove(match);        
+        public void Remove(Match match) => _matches.Remove(match);        
 
-        public static MatchDto MapToDto(Match match)
+        public MatchModel MapToDto(Match match)
         {
-            return new MatchDto
+            return new MatchModel
             {
                 Id = match.Id,
                 Winner = match.Winner,
                 WhoseTurn = match.WhoseTurn,
                 State = match.State,
-                Players = match.Players.Select(x => new PlayerDto
+                Players = match.Players.Select(x => new PlayerModel
                 {
                     Id = x.Id,
                     Ready = x.Ready

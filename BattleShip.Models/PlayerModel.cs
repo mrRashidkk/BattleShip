@@ -1,6 +1,6 @@
 ﻿namespace BattleShip.Models
 {
-    public class PlayerDto
+    public class PlayerModel
     {
         public string Id { get; set; }
         public bool Ready { get; set; }

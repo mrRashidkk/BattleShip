@@ -2,10 +2,10 @@
 {
     public class Player
     {
+        private Square[][] Board = new Square[10][];
         public readonly string Id;
         public bool Ready;
-        public int HP { get; private set; } = 20;
-        private Square[][] Board = new Square[10][];        
+        public int HP { get; private set; } = 20;              
 
         public Player(string id)
         {

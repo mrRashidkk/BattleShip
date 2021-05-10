@@ -1,7 +1,6 @@
 using BattleShip.Entities;
 using BattleShip.Services;
 using System;
-using System.Linq;
 using Xunit;
 
 namespace BattleShip.Tests
@@ -20,7 +19,7 @@ namespace BattleShip.Tests
         }
 
         [Fact]
-        public void Remove_OnePlayer_ShouldDecreaseNumberOfPlayersByOne()
+        public void Remove_OnePlayer_ShouldDecrementNumberOfPlayers()
         {
             PlayerManager playerManager = new PlayerManager();
             Player player1 = new Player(Guid.NewGuid().ToString());

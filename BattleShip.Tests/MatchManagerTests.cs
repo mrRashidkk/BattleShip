@@ -10,7 +10,7 @@ namespace BattleShip.Tests
     public class MatchManagerTests
     {
         [Fact]
-        public void Remove_OneMatch_ShouldDecreaseNumberOfMatchesByOne()
+        public void Remove_OneMatch_ShouldDecrementNumberOfMatches()
         {
             MatchManager matchManager = new MatchManager();
             Match match1 = new Match(Guid.NewGuid().ToString());

@@ -71,8 +71,8 @@ namespace BattleShip.Hubs
                 player.Reset();
 
                 Match match = new Match(Guid.NewGuid().ToString());
-                _matchManager.Add(match);
                 match.AddPlayer(player);
+                _matchManager.Add(match);                
 
                 await Groups.AddToGroupAsync(player.Id, match.Id);
 
